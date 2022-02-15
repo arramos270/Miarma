@@ -1,5 +1,6 @@
 package com.example.Miarma.Dto;
 
+import com.example.Miarma.Validation.CustomValidators.UniqueUsername;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
@@ -15,20 +16,21 @@ import javax.validation.constraints.NotEmpty;
 @Builder
 public class CreateUserDto {
 
-    @NotBlank(message = "El nombre de usuario no puede estar en blanco")
+    @NotBlank(message = "{user.username.blank}")
+    @UniqueUsername(message = "{user.username.unico}")
     private String username;
 
-    @URL //Para seguir con que sea una URL
+    @URL(message = "{user.avatar.url}")
     private String avatar;
 
-    @NotEmpty(message = "El nombre completo no puede estar en blanco")
+    @NotEmpty(message = "{user.fullname.empty}")
     private String fullname;
 
-    @Email(message = "No es un email válido")
+    @Email(message = "{user.email.notemail}")
     private String email;
 
-    @NotBlank
-    @Min(value = 4, message = "La contraseña debe tener al menos 4 carácteres")
+    @NotBlank(message = "{user.password.blank")
+    @Min(value = 4, message = "{user.password.min}")
     private String password;
     private String password2;
 
