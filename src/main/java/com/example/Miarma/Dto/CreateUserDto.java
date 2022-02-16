@@ -4,10 +4,8 @@ import com.example.Miarma.Validation.CustomValidators.UniqueUsername;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -20,14 +18,17 @@ public class CreateUserDto {
     @UniqueUsername(message = "{user.username.unique}")
     private String username;
 
+    @Email(message = "{user.email.notemail}")
+    private String email;
+
+    @Past
+    private Date fechaNacimiento;
+
     @URL(message = "{user.avatar.url}")
     private String avatar;
 
     @NotEmpty(message = "{user.fullname.empty}")
     private String fullname;
-
-    @Email(message = "{user.email.notemail}")
-    private String email;
 
     @NotBlank(message = "{user.password.blank")
     @Min(value = 4, message = "{user.password.min}")

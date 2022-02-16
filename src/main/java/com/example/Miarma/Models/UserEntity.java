@@ -14,9 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.hibernate.annotations.Parameter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="users")
@@ -44,13 +42,27 @@ public class UserEntity implements UserDetails {
 
     @NaturalId
     @Column(unique = true, updatable = false)
+    private String username;
+
+    @NaturalId
+    @Column(unique = true, updatable = false)
     private String email;
+
+    private Date fechaNacimiento;
 
     private String password;
 
     private String avatar;
 
     private String fullName;
+
+    private Boolean perfilPublico = true; //True = público; False = privado
+
+    @OneToMany(mappedBy = "userEntity") //Unir con seguimiento
+    private List<UserEntity> followers = new ArrayList<>(); //Los que le siguen
+
+    @OneToMany(mappedBy = "userEntity") //Unir con seguimiento
+    private List<UserEntity> follows = new ArrayList<>(); //A los que este usuario sigue
 
     private String role = "USER";
 

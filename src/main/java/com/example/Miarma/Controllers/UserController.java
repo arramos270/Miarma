@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+//@RequestMapping("/user")
 @Validated
 public class UserController {
 
@@ -25,6 +25,16 @@ public class UserController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<GetUserDto> nuevoUsuario(@RequestBody CreateUserDto newUser) {
+        UserEntity saved = userEntityService.save(newUser);
+
+        if (saved == null)
+            return ResponseEntity.badRequest().build();
+        else
+            return ResponseEntity.ok(userDtoConverter.convertUserEntityToGetUserDto(saved));
+    }
+
+    @PostMapping("/auth/login") //Corregir
+    public ResponseEntity<GetUserDto> logearUsuario(@RequestBody CreateUserDto newUser) {
         UserEntity saved = userEntityService.save(newUser);
 
         if (saved == null)
@@ -43,4 +53,6 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
 }
