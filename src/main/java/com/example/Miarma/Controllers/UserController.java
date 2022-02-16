@@ -10,8 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -34,14 +34,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetUserDto> buscarUsuario(@PathVariable @Min(value = 0, message = "No se pueden buscar usuarios con un identificador negativo") UUID id) {
+    public ResponseEntity<GetUserDto> buscarUsuarioPorId(@PathVariable @Min(value = 0, message = "No se pueden buscar usuarios con un identificador negativo") UUID id) {
+        Optional<UserEntity> usuarioBuscado = userEntityService.findById(id);
 
-        return userEntityService.findById(id).ifPresent( userEntityService.findById(id)); //Mirar devolver cosas con un Optional.ifPresent()
-
-        if (userEntityService.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
+        if(usuarioBuscado.isPresent()) {
+            return ResponseEntity.ok(userDtoConverter.convertUserEntityToGetUserDto(usuarioBuscado.get()));
         } else {
-            return ResponseEntity.ok(userDtoConverter.convertUserEntityToGetUserDto(userEntityService.findById(id).ifPresent()));
+            return ResponseEntity.notFound().build();
         }
     }
 }

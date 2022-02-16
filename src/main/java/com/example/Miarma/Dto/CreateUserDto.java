@@ -13,11 +13,11 @@ import javax.validation.constraints.NotEmpty;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder //Falta comprobar que las contraseñas son iguales
 public class CreateUserDto {
 
     @NotBlank(message = "{user.username.blank}")
-    @UniqueUsername(message = "{user.username.unico}")
+    @UniqueUsername(message = "{user.username.unique}")
     private String username;
 
     @URL(message = "{user.avatar.url}")
