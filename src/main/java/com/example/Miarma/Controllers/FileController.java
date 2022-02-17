@@ -20,7 +20,7 @@ public class FileController {
     private final StorageService storageService;
 
     @PostMapping("/upload") //Subir fichero
-    public ResponseEntity<?> upload(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<FileResponse> upload(@RequestPart("file") MultipartFile file) {
 
         String name = storageService.store(file);
 
@@ -40,7 +40,7 @@ public class FileController {
     }
 
     @PostMapping("/uploadCustomSize") //Subir fichero tamaño personalizado
-    public ResponseEntity<?> uploadCustom(@RequestPart("file") MultipartFile file, Long size) {
+    public ResponseEntity<FileResponse> uploadCustom(@RequestPart("file") MultipartFile file, Long size) {
 
         String name = storageService.store(file);
 
@@ -69,6 +69,16 @@ public class FileController {
                 .body(resource);
 
 
+    }
+
+    @DeleteMapping("/delete/{filename:.+}")
+    public ResponseEntity deleteFile(@PathVariable String filename) {
+        if(storageService.loadAsResource(filename).exists()) {
+            storageService.deleteFile(filename);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }

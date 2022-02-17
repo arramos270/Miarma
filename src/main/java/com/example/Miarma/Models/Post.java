@@ -41,11 +41,17 @@ public class Post {
 
     private String description;
 
-    private String archivo;
+    private FileResponse archivo;
 
-    private String escalado;
+    private FileResponse escalado;
 
     private boolean publica = true; //Un contenido sólo para nuestros seguidores
+
+    private UUID idCreador;
+
+    public UUID getIdCreador() {
+        return idCreador;
+    }
 
     public UUID getId() {
         return id;
@@ -71,11 +77,11 @@ public class Post {
         this.description = description;
     }
 
-    public String getArchivo() {
+    public FileResponse getArchivo() {
         return archivo;
     }
 
-    public void setArchivo(String archivo) {
+    public void setArchivo(FileResponse archivo) {
         this.archivo = archivo;
     }
 
@@ -87,11 +93,11 @@ public class Post {
         this.publica = publica;
     }
 
-    public String getEscalado() {
+    public FileResponse getEscalado() {
         return escalado;
     }
 
-    public void setEscalado(String escalado) {
+    public void setEscalado(FileResponse escalado) {
         this.escalado = escalado;
     }
 }

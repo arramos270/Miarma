@@ -7,6 +7,7 @@ import com.example.Miarma.Repositories.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service("userDetailsService")
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class UserEntityService extends BaseService<UserEntity, UUID, UserEntityRepository> implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
+    private UserEntityRepository userEntityRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -28,7 +31,7 @@ public class UserEntityService extends BaseService<UserEntity, UUID, UserEntityR
                 .orElseThrow(()-> new UsernameNotFoundException(username + " no encontrado"));
     }
 
-    public UserEntity save(CreateUserDto newUser) { //Añadir atributos nuevos
+    public UserEntity save(CreateUserDto newUser) {
         if (newUser.getPassword().contentEquals(newUser.getPassword2())) {
             UserEntity userEntity = UserEntity.builder()
                     .password(passwordEncoder.encode(newUser.getPassword()))
@@ -41,6 +44,10 @@ public class UserEntityService extends BaseService<UserEntity, UUID, UserEntityR
         } else {
             return null;
         }
+    }
+
+    public Optional<UserEntity> findUserByUsername(String username){
+        return userEntityRepository.findFirstByUsername(username);
     }
 
 }
