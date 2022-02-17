@@ -23,7 +23,7 @@ public class UserController {
     private final UserEntityService userEntityService;
     private final UserDtoConverter userDtoConverter;
 
-    @PostMapping("/auth/register")
+    @PostMapping("/auth/register") //Como tenemos la clase anotada con @Validated, no nos hace falta poner aqui @Valid
     public ResponseEntity<GetUserDto> nuevoUsuario(@RequestBody CreateUserDto newUser) {
         UserEntity saved = userEntityService.save(newUser);
 

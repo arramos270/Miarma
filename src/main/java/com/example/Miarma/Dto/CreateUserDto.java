@@ -1,5 +1,6 @@
 package com.example.Miarma.Dto;
 
+import com.example.Miarma.Validation.CustomValidators.PasswordsMatch;
 import com.example.Miarma.Validation.CustomValidators.UniqueUsername;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
@@ -11,7 +12,8 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder //Falta comprobar que las contraseñas son iguales
+@PasswordsMatch(passwordField = "password", verifyPasswordField = "password2", message = "{user.password.mismatch")
+@Builder
 public class CreateUserDto {
 
     @NotBlank(message = "{user.username.blank}")

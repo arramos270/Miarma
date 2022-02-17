@@ -58,10 +58,10 @@ public class UserEntity implements UserDetails {
 
     private Boolean perfilPublico = true; //True = público; False = privado
 
-    @OneToMany(mappedBy = "userEntity") //Unir con seguimiento
+    @OneToMany(mappedBy = "seguimiento") //Unir con seguimiento
     private List<UserEntity> followers = new ArrayList<>(); //Los que le siguen
 
-    @OneToMany(mappedBy = "userEntity") //Unir con seguimiento
+    @OneToMany(mappedBy = "seguimiento") //Unir con seguimiento
     private List<UserEntity> follows = new ArrayList<>(); //A los que este usuario sigue
 
     private String role = "USER";
