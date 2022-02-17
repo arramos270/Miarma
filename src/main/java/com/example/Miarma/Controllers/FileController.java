@@ -19,8 +19,7 @@ public class FileController {
 
     private final StorageService storageService;
 
-
-    @PostMapping("/upload")
+    @PostMapping("/upload") //Subir fichero
     public ResponseEntity<?> upload(@RequestPart("file") MultipartFile file) {
 
         String name = storageService.store(file);
@@ -30,15 +29,34 @@ public class FileController {
                 .path(name)
                 .toUriString();
 
-        FileResponse response = FileResponse.builder()
+        FileResponse archivo = FileResponse.builder()
                 .name(name)
                 .size(file.getSize())
                 .type(file.getContentType())
                 .uri(uri)
                 .build();
 
-        return ResponseEntity.created(URI.create(uri)).body(response);
+        return ResponseEntity.created(URI.create(uri)).body(archivo);
+    }
 
+    @PostMapping("/uploadCustomSize") //Subir fichero tamaño personalizado
+    public ResponseEntity<?> uploadCustom(@RequestPart("file") MultipartFile file, Long size) {
+
+        String name = storageService.store(file);
+
+        String uri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/download/")
+                .path(name)
+                .toUriString();
+
+        FileResponse archivo = FileResponse.builder()
+                .name("esc"+name)
+                .size(size)
+                .type(file.getContentType())
+                .uri(uri)
+                .build();
+
+        return ResponseEntity.created(URI.create(uri)).body(archivo);
     }
 
     @GetMapping("/download/{filename:.+}")

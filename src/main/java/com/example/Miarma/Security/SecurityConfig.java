@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 //.antMatchers(HttpMethod.POST, "/producto/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/auth/**").anonymous() //Esto es no loggeado
+                .antMatchers(HttpMethod.POST, "/auth/**").permitAll() //Esto es no loggeado
                 .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated();
 
