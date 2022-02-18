@@ -14,5 +14,7 @@ public interface UserEntityRepository extends JpaRepository<UserEntity, UUID> {
 
     boolean existsByUsername(String nombre);
 
+
+
 }
 

@@ -29,4 +29,8 @@ public class SeguimientoService  extends BaseService<Seguimiento, UUID, Seguimie
         );
         return listaUsuarios;
     }
+
+    public List<Seguimiento> miListaDeSolicitudesEnEspera(UUID userId){
+        return seguimientoRepository.getMyFollowersWaiting(userId);
+    }
 }
