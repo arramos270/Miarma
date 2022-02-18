@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import java.awt.image.BufferedImage;
 import java.util.UUID;
 
 @Entity
@@ -41,9 +42,13 @@ public class Post {
 
     private String description;
 
-    private FileResponse archivo;
+    private BufferedImage archivo;
 
-    private FileResponse escalado;
+    private BufferedImage escalado;
+
+    public void setIdCreador(UUID idCreador) {
+        this.idCreador = idCreador;
+    }
 
     private boolean publica = true; //Un contenido sólo para nuestros seguidores
 
@@ -77,11 +82,8 @@ public class Post {
         this.description = description;
     }
 
-    public FileResponse getArchivo() {
-        return archivo;
-    }
 
-    public void setArchivo(FileResponse archivo) {
+    public void setArchivo(BufferedImage archivo) {
         this.archivo = archivo;
     }
 
@@ -93,11 +95,7 @@ public class Post {
         this.publica = publica;
     }
 
-    public FileResponse getEscalado() {
-        return escalado;
-    }
-
-    public void setEscalado(FileResponse escalado) {
+    public void setEscalado(BufferedImage escalado) {
         this.escalado = escalado;
     }
 }

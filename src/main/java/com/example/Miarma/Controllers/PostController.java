@@ -8,15 +8,19 @@ import com.example.Miarma.Services.PostService;
 import com.example.Miarma.Services.StorageService;
 import com.example.Miarma.Services.UserEntityService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.imgscalr.Scalr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,15 +37,15 @@ public class PostController {
     private UserEntityService userEntityService;
 
     @PostMapping("/")
-    public ResponseEntity<Post> crearPost(@RequestBody String titulo, String descripcion, boolean publico, MultipartFile archivo, @CurrentUser UserPrincipal currentUser){
+    public ResponseEntity<Post> crearPost(@RequestBody String titulo, String descripcion, boolean publico, BufferedImage archivo, @CurrentUser UserPrincipal currentUser){
 
         Post nuevoPost = Post.builder()
             .idCreador(currentUser.getId())
             .title(titulo)
             .description(descripcion)
             .publica(publico)
-            .archivo(fileController.upload(archivo).getBody())
-            .escalado(fileController.uploadCustom(archivo, 1024L).getBody()) //Así podemos usar este método también para escalar el avatar del usuario
+            .archivo(Scalr.resize(archivo, archivo.getWidth()))
+            .escalado(Scalr.resize(archivo, 1024))
             .build();
 
         postService.save(nuevoPost);
@@ -50,19 +54,19 @@ public class PostController {
     }
 
     @PutMapping("/{id}") //La única "pega" de esto, es que no podría cambiar sólo un parámetro, sino que deben ser todos
-    public ResponseEntity<Post> editarPost(@PathVariable UUID id, @RequestBody String titulo, String descripcion, MultipartFile archivo){
+    public ResponseEntity<Post> editarPost(@PathVariable UUID id, @RequestBody String titulo, String descripcion, BufferedImage archivo){
         Optional<Post> postABorrar = postService.findById(id);
 
         if(postABorrar.isPresent()) {
-            fileController.deleteFile(postABorrar.get().getArchivo().getName()); //Primero borramos las imagenes antiguas
-            fileController.deleteFile(postABorrar.get().getEscalado().getName());
+            fileController.deleteFile(postABorrar.get().getArchivo().toString()); //Primero borramos las imagenes antiguas
+            fileController.deleteFile(postABorrar.get().getEscalado().toString());
 
             Post postEditado = Post.builder()
                     .id(id)
                     .title(titulo)
                     .description(descripcion)
-                    .archivo(fileController.upload(archivo).getBody())
-                    .escalado(fileController.uploadCustom(archivo, 1024L).getBody())
+                    .archivo(Scalr.resize(archivo, archivo.getWidth()))
+                    .escalado(Scalr.resize(archivo, 1024))
                     .build();
 
             postService.edit(postEditado); //Pues el editar ya busca y sobreescribe, pues el UUID es único
@@ -80,8 +84,8 @@ public class PostController {
         Optional<Post> postABorrar = postService.findById(id);
 
         if(postABorrar.isPresent()) {
-            fileController.deleteFile(postABorrar.get().getArchivo().getName()); //Primero borramos las imagenes
-            fileController.deleteFile(postABorrar.get().getEscalado().getName());
+            fileController.deleteFile(postABorrar.get().getArchivo().toString()); //Primero borramos las imagenes
+            fileController.deleteFile(postABorrar.get().getEscalado().toString());
 
             postService.delete(postABorrar.get());
 
