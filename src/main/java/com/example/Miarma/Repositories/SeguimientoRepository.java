@@ -1,6 +1,7 @@
 package com.example.Miarma.Repositories;
 
 import com.example.Miarma.Models.Seguimiento;
+import com.example.Miarma.Models.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,8 @@ public interface SeguimientoRepository extends JpaRepository<Seguimiento, UUID> 
 
     @Query("select s from Seguimiento s where s.seguido = :id and s.estado = EN_ESPERA")
     public List<Seguimiento> getMyFollowersWaiting(@Param("id") UUID id);
+
+    UserEntity findBySeguidor(UserEntity seguidor);
+
+    UserEntity findBySeguido(UserEntity seguido);
 }

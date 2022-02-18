@@ -1,12 +1,30 @@
 package com.example.Miarma.Models;
 
-import javax.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name="seguimientos")
+@EntityListeners(AuditingEntityListener.class)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Seguimiento {
 
+    @EmbeddedId
+    private SeguimientoPK id;
+
+    @MapsId("idSeguidor")
     @ManyToOne
     UserEntity seguidor; //Este sigue al otro
 
+    @MapsId("idSeguido")
     @ManyToOne
     UserEntity seguido; //Este es el seguido
 

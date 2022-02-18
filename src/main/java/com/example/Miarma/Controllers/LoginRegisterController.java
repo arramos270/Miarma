@@ -21,9 +21,8 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-//@RequestMapping("/user")
 @Validated
-public class UserController {
+public class LoginRegisterController {
 
     private final UserEntityService userEntityService;
     private final UserDtoConverter userDtoConverter;
