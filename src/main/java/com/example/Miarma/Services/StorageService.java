@@ -22,6 +22,4 @@ public interface StorageService {
 
     void deleteAll();
 
-    String storeCustomSize(MultipartFile file, Long size);
-
 }

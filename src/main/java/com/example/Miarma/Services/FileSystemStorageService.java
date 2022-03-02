@@ -125,8 +125,4 @@ public class FileSystemStorageService implements StorageService {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
     }
 
-    @Override
-    public String storeCustomSize(MultipartFile file, Long size) {
-        return null;
-    }
 }
