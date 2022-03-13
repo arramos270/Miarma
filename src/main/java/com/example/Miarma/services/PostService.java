@@ -4,6 +4,8 @@ import com.example.Miarma.dto.CreatePostDto;
 import com.example.Miarma.dto.GetPostDto;
 import com.example.Miarma.dto.PostDtoConverter;
 import com.example.Miarma.exception.SingleEntityNotFoundException;
+import com.example.Miarma.models.Comment;
+import com.example.Miarma.models.MeGusta;
 import com.example.Miarma.models.Post;
 import com.example.Miarma.models.UserEntity;
 import com.example.Miarma.repositories.PostRepository;
@@ -37,8 +39,7 @@ public class PostService extends BaseService<Post, UUID, PostRepository> {
         return repositorio.listaPostPublicosDeUsuario(id);
     }
 
-    public Post saveNewPost(CreatePostDto nuevoPost, UserEntity usuario,
-                                MultipartFile media) throws Exception {
+    public Post saveNewPost(CreatePostDto nuevoPost, UserEntity usuario, MultipartFile media) throws Exception {
         file = mediaTypeSelector.selectMediaType(media);
 
         String originalFilename = storageService.store(media);
@@ -125,6 +126,35 @@ public class PostService extends BaseService<Post, UUID, PostRepository> {
             } else {
                 throw new RuntimeException("Error de procesamiento");
             }
+        }
+    }
+
+    public Post addComment(UUID id, Comment comentario){
+        Optional<Post> postOptional = findById(id);
+
+        if(postOptional.isEmpty()) {
+            throw new SingleEntityNotFoundException(id.toString(), Post.class);
+        } else {
+            Post post = postOptional.get();
+
+            post.getComentarios().add(comentario);
+
+            return post;
+
+        }
+    }
+
+    public Post addMeGusta(UUID id, MeGusta nuevoMeGusta){
+        Optional<Post> postOptional = findById(id);
+
+        if(postOptional.isEmpty()) {
+            throw new SingleEntityNotFoundException(id.toString(), Post.class);
+        } else {
+            Post post = postOptional.get();
+
+            post.getMeGustas().add(nuevoMeGusta);
+
+            return post;
         }
     }
 }

@@ -3,6 +3,8 @@ package com.example.Miarma.controllers;
 import com.example.Miarma.dto.CreatePostDto;
 import com.example.Miarma.dto.GetPostDto;
 import com.example.Miarma.dto.PostDtoConverter;
+import com.example.Miarma.models.Comment;
+import com.example.Miarma.models.MeGusta;
 import com.example.Miarma.models.Post;
 import com.example.Miarma.models.UserEntity;
 import com.example.Miarma.services.PostService;
@@ -121,5 +123,19 @@ public class PostController {
                             .collect(Collectors.toList())
             );
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Post> addComment(@PathVariable UUID id, @RequestPart Comment comentario) throws Exception{
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(postService.addComment(id, comentario));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Post> addMeGusta(@PathVariable UUID id, @RequestPart MeGusta nuevoMeGusta) throws Exception{
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(postService.addMeGusta(id, nuevoMeGusta));
     }
 }

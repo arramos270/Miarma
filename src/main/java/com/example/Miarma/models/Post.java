@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -52,5 +53,11 @@ public class Post implements Serializable {
 
     @Builder.Default
     private LocalDateTime fechaPublicacion = LocalDateTime.now();
+
+    @OneToMany
+    private List<Comment> comentarios;
+
+    @OneToMany
+    private List<MeGusta> meGustas;
 
 }
