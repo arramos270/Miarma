@@ -1,6 +1,6 @@
 package com.example.Miarma.image;
 
-import com.example.Miarma.Utils.MultipartImage;
+import com.example.Miarma.utils.MultipartImage;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
