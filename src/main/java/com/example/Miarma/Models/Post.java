@@ -1,17 +1,15 @@
 package com.example.Miarma.Models;
 
-import com.example.Miarma.Dto.FileResponse;
-import com.example.Miarma.Utils.MediaTypeUrlResource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.awt.image.BufferedImage;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Post {
+public class Post implements Serializable {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -40,62 +38,19 @@ public class Post {
 
     private String title;
 
+    @Lob
     private String description;
 
-    private BufferedImage archivo;
+    private String archivo;
 
-    private BufferedImage escalado;
-
-    public void setIdCreador(UUID idCreador) {
-        this.idCreador = idCreador;
-    }
+    private String escalado;
 
     private boolean publica = true; //Un contenido sólo para nuestros seguidores
 
-    private UUID idCreador;
+    @ManyToOne
+    private UserEntity propietario;
 
-    public UUID getIdCreador() {
-        return idCreador;
-    }
+    @Builder.Default
+    private LocalDateTime fechaPublicacion = LocalDateTime.now();
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-
-    public void setArchivo(BufferedImage archivo) {
-        this.archivo = archivo;
-    }
-
-    public boolean isPublica() {
-        return publica;
-    }
-
-    public void setPublica(boolean publica) {
-        this.publica = publica;
-    }
-
-    public void setEscalado(BufferedImage escalado) {
-        this.escalado = escalado;
-    }
 }

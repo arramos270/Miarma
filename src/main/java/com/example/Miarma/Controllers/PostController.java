@@ -1,5 +1,8 @@
 package com.example.Miarma.Controllers;
 
+import com.example.Miarma.Dto.CreatePostDto;
+import com.example.Miarma.Dto.GetPostDto;
+import com.example.Miarma.Dto.PostDtoConverter;
 import com.example.Miarma.Models.Post;
 import com.example.Miarma.Models.UserEntity;
 import com.example.Miarma.Security.CurrentUser;
@@ -11,11 +14,14 @@ import lombok.RequiredArgsConstructor;
 import org.imgscalr.Scalr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
@@ -24,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,108 +41,96 @@ public class PostController {
     private FileController fileController;
     private StorageService storageService;
     private PostService postService;
+    private PostDtoConverter postDtoConverter;
     private UserEntityService userEntityService;
 
     @PostMapping("/")
-    public ResponseEntity<Post> crearPost(@RequestBody String titulo, String descripcion, boolean publico, BufferedImage archivo, @CurrentUser UserPrincipal currentUser){
+    public ResponseEntity<GetPostDto> crearPost(@RequestPart CreatePostDto nuevoPost, @RequestPart MultipartFile archivo, @AuthenticationPrincipal UserEntity creador) throws Exception {
 
-        Post nuevoPost = Post.builder()
-            .idCreador(currentUser.getId())
-            .title(titulo)
-            .description(descripcion)
-            .publica(publico)
-            .archivo(Scalr.resize(archivo, archivo.getWidth()))
-            .escalado(Scalr.resize(archivo, 1024))
-            .build();
+        Post nuevo = postService.saveNewPost(nuevoPost, creador, archivo);
 
-        postService.save(nuevoPost);
+        if(nuevo == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPost);
+        return ResponseEntity.status(HttpStatus.CREATED).body(postDtoConverter.convertPostToGetPostDto(nuevo));
     }
 
-    @PutMapping("/{id}") //La única "pega" de esto, es que no podría cambiar sólo un parámetro, sino que deben ser todos
-    public ResponseEntity<Post> editarPost(@PathVariable UUID id, @RequestBody String titulo, String descripcion, BufferedImage archivo){
-        Optional<Post> postABorrar = postService.findById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<GetPostDto> editarPost(@PathVariable UUID id, @RequestPart CreatePostDto nuevoPost, @RequestPart MultipartFile file, @AuthenticationPrincipal UserEntity usuario) throws Exception{
 
-        if(postABorrar.isPresent()) {
-            fileController.deleteFile(postABorrar.get().getArchivo().toString()); //Primero borramos las imagenes antiguas
-            fileController.deleteFile(postABorrar.get().getEscalado().toString());
-
-            Post postEditado = Post.builder()
-                    .id(id)
-                    .title(titulo)
-                    .description(descripcion)
-                    .archivo(Scalr.resize(archivo, archivo.getWidth()))
-                    .escalado(Scalr.resize(archivo, 1024))
-                    .build();
-
-            postService.edit(postEditado); //Pues el editar ya busca y sobreescribe, pues el UUID es único
-
-
-            return ResponseEntity.status(HttpStatus.OK).body(postEditado);
-
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(postService.editPost(nuevoPost, file, id, usuario));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity borrarPost(@PathVariable UUID id){
-        Optional<Post> postABorrar = postService.findById(id);
+    public ResponseEntity borrarPost(@PathVariable UUID id, @AuthenticationPrincipal UserEntity usuario){
 
-        if(postABorrar.isPresent()) {
-            fileController.deleteFile(postABorrar.get().getArchivo().toString()); //Primero borramos las imagenes
-            fileController.deleteFile(postABorrar.get().getEscalado().toString());
-
-            postService.delete(postABorrar.get());
-
-            return ResponseEntity.status(HttpStatus.OK).build();
-
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        postService.deletePublicacion(id, usuario);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/public")
     public ResponseEntity<List<Post>> verPostsPublicos() {
+
         return ResponseEntity.status(HttpStatus.OK).body(postService.listarAllPostPublicos());
     }
 
-    @GetMapping("/{id}") //Necesitamos que los Post contengan a su creador
-    public ResponseEntity<List<Post>> verPostPorId(@PathVariable UUID id, @CurrentUser UserPrincipal currentUser) {
-        UserEntity usuarioActual = userEntityService.findById(currentUser.getId()).get();
-        Optional<Post> postAVer = postService.findById(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<GetPostDto> verPostPorId(@PathVariable UUID id, @AuthenticationPrincipal UserEntity usuario) {
+        Optional<Post> postOptional = postService.findById(id);
 
-        if(postAVer.isEmpty()){
+        if(postOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
-            if (usuarioActual.getFollows().contains(userEntityService.findById(postAVer.get().getIdCreador()))) //Miramos si este usuario sigue al creador del post
-                return ResponseEntity.status(HttpStatus.OK).body(postService.listarAllPostPublicos());
-            else{
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();//Pues no sigue a ese usuario
+            Post post = postOptional.get();
+            UUID propietarioId = post.getPropietario().getId();
+
+            if(propietarioId.equals(usuario.getId()) || post.isPublica()
+                    || usuario.getFollows().contains(post.getPropietario())) { //Si sigues al propietario de la foto, lo ves
+                return ResponseEntity.ok()
+                        .body(postDtoConverter.convertPostToGetPostDto(post));
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
     }
 
     @GetMapping("/{nick}")
-    public ResponseEntity<List<Post>> verPostDeUsuario(@PathVariable String username, @CurrentUser UserPrincipal currentUser) {
-        UserEntity usuarioABuscar = userEntityService.findUserByUsername(username).get();
+    public ResponseEntity<List<GetPostDto>> verPostDeUsuario(@PathVariable String nick, @AuthenticationPrincipal UserEntity usuario) {
+        UserEntity usuarioBuscado = userEntityService.findUserByUsername(nick).get();
 
-        if(userEntityService.findUserByUsername(username).isEmpty()){
-            return ResponseEntity.notFound().build();
+        List<Post> publicaciones;
+
+        if(usuario.getFollows().contains(usuarioBuscado)) {
+            publicaciones = postService.listarTodosPostsUsuarioX(usuarioBuscado.getId());
         } else {
-            if (usuarioABuscar.getFollowers().contains(userEntityService.findById(currentUser.getId()))) //Miramos si el usuario a buscar es seguido por el que busca
-                return ResponseEntity.status(HttpStatus.OK).body(postService.listarTodosPostsUsuarioX(usuarioABuscar.getId())); //Le sigue? Todos sus posts
-            else{
-                return ResponseEntity.status(HttpStatus.OK).body(postService.listarTodosPostsPublicosUsuarioX(usuarioABuscar.getId()));//No le sigue? sólo los posts públicos
-            }
+            publicaciones = postService.listarTodosPostsPublicosUsuarioX(usuarioBuscado.getId());
+        }
+
+        if(publicaciones.isEmpty()){
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok().body(
+                    publicaciones.stream()
+                            .map(postDtoConverter::convertPostToGetPostDto)
+                            .collect(Collectors.toList())
+            );
         }
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<Post>> verMisPosts(@CurrentUser UserPrincipal currentUser) {
-        return ResponseEntity.status(HttpStatus.OK).body(postService.listarTodosPostsUsuarioX(currentUser.getId()));
+    public ResponseEntity<List<GetPostDto>> verMisPosts(@AuthenticationPrincipal UserEntity usuario) {
+        List<Post> misPublicaciones = postService.listarTodosPostsUsuarioX(usuario.getId());
+
+        if(misPublicaciones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok().body(
+                    misPublicaciones.stream()
+                            .map(postDtoConverter::convertPostToGetPostDto)
+                            .collect(Collectors.toList())
+            );
+        }
     }
-
-
 }
